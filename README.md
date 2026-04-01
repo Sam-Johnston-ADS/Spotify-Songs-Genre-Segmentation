@@ -143,7 +143,7 @@ Browse songs from dataset
 ```bash
 Sam Johnston C
 B.Tech Artificial Intelligence and Data Science
-St. Joseph College of Engineering
+St. Joseph's College of Engineering
 ```
 ### ⭐ Future Improvements
 ```bash
