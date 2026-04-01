@@ -109,6 +109,7 @@ Confusion Matrix
 Used for segmenting songs into clusters
 #### 🔹 KNN Recommendation System
 Used for finding similar songs based on audio features
+
 ### 📈 Visualizations Included
 
 ✔ Genre Distribution
@@ -119,8 +120,8 @@ Used for finding similar songs based on audio features
 ### 🎵 Web Dashboard Output
 
 #### The dashboard allows you to:
-
 Browse songs from dataset
+
 -Search by song name / artist
 -Filter songs by genre
 -Download filtered songs as CSV
@@ -128,6 +129,7 @@ Browse songs from dataset
 -Recommend similar songs
 
 ###  🛠 Tech Stack
+
 -Python
 -Pandas / NumPy
 -Matplotlib / Seaborn
@@ -143,6 +145,7 @@ B.Tech Artificial Intelligence and Data Science
 St. Joseph College of Engineering
 
 ### ⭐ Future Improvements
+
 -Add real-time Spotify API integration
 -Add song preview and audio player
 -Deploy on Heroku / Render
