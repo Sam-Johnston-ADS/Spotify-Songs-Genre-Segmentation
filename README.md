@@ -111,15 +111,16 @@ Used for segmenting songs into clusters
 Used for finding similar songs based on audio features
 
 ### 📈 Visualizations Included
-
+```bash
 ✔ Genre Distribution
 ✔ Average Tempo by Genre
 ✔ Danceability vs Energy Scatter Plot
 ✔ PCA Cluster Visualization
-
+```
 ### 🎵 Web Dashboard Output
 
 #### The dashboard allows you to:
+```bash
 Browse songs from dataset
 
 -Search by song name / artist
@@ -127,9 +128,9 @@ Browse songs from dataset
 -Download filtered songs as CSV
 -Predict genre using ML
 -Recommend similar songs
-
+```
 ###  🛠 Tech Stack
-
+```bash
 -Python
 -Pandas / NumPy
 -Matplotlib / Seaborn
@@ -137,21 +138,21 @@ Browse songs from dataset
 -Flask
 -HTML / CSS
 -Joblib (Model Saving)
-
+```
 ### 👨‍💻 Author
-
+```bash
 Sam Johnston C
 B.Tech Artificial Intelligence and Data Science
 St. Joseph College of Engineering
-
+```
 ### ⭐ Future Improvements
-
+```bash
 -Add real-time Spotify API integration
 -Add song preview and audio player
 -Deploy on Heroku / Render
 -Add deep learning model for better accuracy
 -Add full interactive charts using Plotly
-
+```
 ### 📜 License
 
 This project is open-source and free to use for learning and educational purposes.
