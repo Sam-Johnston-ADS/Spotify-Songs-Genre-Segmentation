@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify ML Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Noise Overlay -->
+<div class="noise"></div>
+
+<!-- Ambient Blobs -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="app-shell">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" fill="currentColor"/>
+                </svg>
+            </div>
+            <span>SoundML</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#songs" class="nav-item active" data-tab="songs">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                <span>Songs</span>
+            </a>
+            <a href="#insights" class="nav-item" data-tab="insights">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Insights</span>
+            </a>
+            <a href="#predict" class="nav-item" data-tab="predict">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>Predict</span>
+            </a>
+            <a href="#recommend" class="nav-item" data-tab="recommend">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span>Recommend</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="eq-bars">
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+            </div>
+            <p>ML-Powered Analysis</p>
+        </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <h1 class="page-title">Spotify <span class="accent">ML</span> Dashboard</h1>
+                <p class="page-sub">32,833 tracks · Machine learning insights</p>
+            </div>
+            <div class="header-right">
+                <div class="stat-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    6 Genres
+                </div>
+                <div class="stat-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                    RF Model
+                </div>
+            </div>
+        </header>
+
+        <!-- ========== SONGS SECTION ========== -->
+        <section id="songs" class="content-section active">
+
+            <!-- Search & Filter Bar -->
+            <form method="GET" class="filter-bar">
+                <div class="search-wrap">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" name="search" placeholder="Search songs or artists…" value="{{ search_query }}" class="search-input">
+                </div>
+                <div class="select-wrap">
+                    <select name="genre" class="genre-select">
+                        <option value="">All Genres</option>
+                        {% for g in genre_list %}
+                        <option value="{{ g }}" {% if selected_genre == g %}selected{% endif %}>{{ g | title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    Search
+                </button>
+                <a class="btn-secondary" href="/download?search={{ search_query }}&genre={{ selected_genre }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Export CSV
+                </a>
+            </form>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <span class="stat-value">32,833</span>
+                    <span class="stat-label">Total Tracks</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">6</span>
+                    <span class="stat-label">Genres</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">0.65</span>
+                    <span class="stat-label">Avg Danceability</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">~120</span>
+                    <span class="stat-label">Avg Tempo (BPM)</span>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrap">
+                <div class="table-header-row">
+                    <h2 class="section-heading">
+                        <span class="heading-dot"></span>
+                        Track Library
+                    </h2>
+                    <span class="result-count">Showing top 50 results</span>
+                </div>
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Track</th>
+                                <th>Artist</th>
+                                <th>Genre</th>
+                                <th>Tempo</th>
+                                <th>Dance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for song in songs %}
+                            <tr class="table-row" style="animation-delay: {{ loop.index0 * 0.015 }}s">
+                                <td class="row-num">{{ loop.index }}</td>
+                                <td class="track-name">{{ song.track_name }}</td>
+                                <td class="artist-name">{{ song.track_artist }}</td>
+                                <td><span class="genre-badge genre-{{ song.playlist_genre | replace(' ', '-') }}">{{ song.playlist_genre }}</span></td>
+                                <td class="tempo-val">{{ "%.1f"|format(song.tempo) }}</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <div class="mini-bar" style="width: {{ (song.danceability * 100)|int }}%"></div>
+                                        <span class="bar-label">{{ "%.2f"|format(song.danceability) }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== INSIGHTS SECTION ========== -->
+        <section id="insights" class="content-section">
+            <h2 class="section-heading">
+                <span class="heading-dot"></span>
+                Graphical Insights
+            </h2>
+            <p class="section-sub">Visual analysis of audio features across genres</p>
+
+            <div class="plots-grid">
+                <div class="plot-tile wide">
+                    <div class="plot-tile-header">
+                        <div class="plot-label">Genre Distribution</div>
+                        <div class="plot-icon">📊</div>
+                    </div>
+                    <img src="{{ url_for('static', filename='plots/genre_distribution.png') }}" alt="Genre Distribution" loading="lazy">
+                </div>
+                <div class="plot-tile">
+                    <div class="plot-tile-header">
+                        <div class="plot-label">Avg Tempo by Genre</div>
+                        <div class="plot-icon">🎵</div>
+                    </div>
+                    <img src="{{ url_for('static', filename='plots/avg_tempo.png') }}" alt="Average Tempo" loading="lazy">
+                </div>
+                <div class="plot-tile">
+                    <div class="plot-tile-header">
+                        <div class="plot-label">Energy vs Danceability</div>
+                        <div class="plot-icon">⚡</div>
+                    </div>
+                    <img src="{{ url_for('static', filename='plots/scatter_energy_dance.png') }}" alt="Scatter Plot" loading="lazy">
+                </div>
+                <div class="plot-tile wide">
+                    <div class="plot-tile-header">
+                        <div class="plot-label">PCA Cluster Visualization</div>
+                        <div class="plot-icon">🔬</div>
+                    </div>
+                    <img src="{{ url_for('static', filename='plots/pca_clusters.png') }}" alt="PCA Clusters" loading="lazy">
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== PREDICT SECTION ========== -->
+        <section id="predict" class="content-section">
+            <h2 class="section-heading">
+                <span class="heading-dot"></span>
+                Genre Prediction
+            </h2>
+            <p class="section-sub">Input audio features to predict the music genre using Random Forest</p>
+
+            <div class="predict-layout">
+                <form method="POST" id="predictForm" class="predict-form">
+                    <div class="feature-hint">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        All values except Loudness and Tempo are between 0.0 and 1.0
+                    </div>
+
+                    <div class="features-grid">
+                        {% set feature_data = [
+                            ('danceability', 'Danceability', '0', '1', '0.01', '🕺'),
+                            ('energy', 'Energy', '0', '1', '0.01', '⚡'),
+                            ('loudness', 'Loudness (dB)', '-60', '0', '0.1', '🔊'),
+                            ('speechiness', 'Speechiness', '0', '1', '0.01', '🎙️'),
+                            ('acousticness', 'Acousticness', '0', '1', '0.01', '🎸'),
+                            ('instrumentalness', 'Instrumentalness', '0', '1', '0.01', '🎹'),
+                            ('liveness', 'Liveness', '0', '1', '0.01', '🎤'),
+                            ('valence', 'Valence', '0', '1', '0.01', '😊'),
+                            ('tempo', 'Tempo (BPM)', '0', '250', '0.1', '🥁')
+                        ] %}
+
+                        {% for name, label, min, max, step, icon in feature_data %}
+                        <div class="feature-input-wrap">
+                            <label class="feature-label">
+                                <span class="feature-icon">{{ icon }}</span>
+                                {{ label }}
+                            </label>
+                            <div class="input-with-range">
+                                <input type="number" name="{{ name }}" step="{{ step }}" min="{{ min }}" max="{{ max }}" placeholder="{{ min }}" class="feature-input" required
+                                       oninput="updateRange(this)">
+                                <div class="range-track">
+                                    <div class="range-fill" id="fill_{{ name }}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn-predict" id="predictBtn">
+                        <span class="btn-text">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            Predict Genre
+                        </span>
+                        <span class="btn-loading" style="display:none">
+                            <div class="btn-spinner"></div>
+                            Predicting…
+                        </span>
+                    </button>
+                </form>
+
+                <div class="predict-side">
+                    {% if error_message %}
+                    <div class="alert alert-error">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        {{ error_message }}
+                    </div>
+                    {% endif %}
+
+                    {% if predicted_genre %}
+                    <div class="result-card">
+                        <div class="result-label">Predicted Genre</div>
+                        <div class="result-genre">{{ predicted_genre }}</div>
+                        <div class="result-decoration">
+                            <div class="result-eq">
+                                <div class="r-bar"></div>
+                                <div class="r-bar"></div>
+                                <div class="r-bar"></div>
+                                <div class="r-bar"></div>
+                                <div class="r-bar"></div>
+                                <div class="r-bar"></div>
+                                <div class="r-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="predict-placeholder">
+                        <div class="placeholder-icon">🎯</div>
+                        <p>Fill in the audio features and hit Predict to classify the genre</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="feature-guide">
+                        <h4>Feature Reference</h4>
+                        <dl>
+                            <dt>Danceability</dt><dd>How suitable for dancing (0–1)</dd>
+                            <dt>Energy</dt><dd>Intensity & activity (0–1)</dd>
+                            <dt>Loudness</dt><dd>Overall loudness in dB (–60–0)</dd>
+                            <dt>Valence</dt><dd>Musical positivity (0–1)</dd>
+                            <dt>Tempo</dt><dd>Estimated BPM (0–250)</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== RECOMMEND SECTION ========== -->
+        <section id="recommend" class="content-section">
+            <h2 class="section-heading">
+                <span class="heading-dot"></span>
+                Song Recommendations
+            </h2>
+            <p class="section-sub">Powered by KNN — find tracks similar to your input song</p>
+
+            <div class="rec-layout">
+                <form method="POST" class="rec-form">
+                    <div class="rec-search-wrap">
+                        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        <input type="text" name="song_name" placeholder="Type a song name from the dataset…" required class="rec-input">
+                    </div>
+                    <button type="submit" class="btn-recommend">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        Find Similar Songs
+                    </button>
+                </form>
+
+                {% if rec_error %}
+                <div class="alert alert-error" style="margin-top:1.5rem">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    {{ rec_error }}
+                </div>
+                {% endif %}
+
+                {% if recommended_list %}
+                <div class="rec-results">
+                    <div class="rec-results-header">
+                        <h3>Similar Tracks</h3>
+                        <span class="rec-count">{{ recommended_list | length }} found</span>
+                    </div>
+                    <div class="rec-grid">
+                        {% for song in recommended_list %}
+                        <div class="rec-card" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+                            <div class="rec-card-top">
+                                <div class="rec-number">{{ loop.index }}</div>
+                                <span class="rec-genre-badge genre-{{ song.playlist_genre | replace(' ', '-') }}">{{ song.playlist_genre }}</span>
+                            </div>
+                            <div class="rec-track">{{ song.track_name }}</div>
+                            <div class="rec-artist">{{ song.track_artist }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="rec-placeholder">
+                    <div class="placeholder-waves">
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                    </div>
+                    <p>Enter a song name above to discover similar tracks</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+// Tab navigation
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.content-section');
+
+navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tab = item.dataset.tab;
+
+        navItems.forEach(n => n.classList.remove('active'));
+        sections.forEach(s => s.classList.remove('active'));
+
+        item.classList.add('active');
+        document.getElementById(tab).classList.add('active');
+    });
+});
+
+// Auto-navigate to predict/recommend if results exist
+{% if predicted_genre or error_message %}
+document.querySelector('[data-tab="predict"]').click();
+{% elif recommended_list or rec_error %}
+document.querySelector('[data-tab="recommend"]').click();
+{% endif %}
+
+// Predict form loading state
+const predictForm = document.getElementById('predictForm');
+const predictBtn = document.getElementById('predictBtn');
+if (predictForm) {
+    predictForm.addEventListener('submit', () => {
+        predictBtn.querySelector('.btn-text').style.display = 'none';
+        predictBtn.querySelector('.btn-loading').style.display = 'flex';
+        predictBtn.disabled = true;
+    });
+}
+
+// Dynamic range fill on input
+function updateRange(input) {
+    const name = input.name;
+    const fill = document.getElementById('fill_' + name);
+    if (!fill) return;
+    const min = parseFloat(input.min) || 0;
+    const max = parseFloat(input.max) || 1;
+    const val = parseFloat(input.value);
+    if (!isNaN(val)) {
+        const pct = Math.min(100, Math.max(0, ((val - min) / (max - min)) * 100));
+        fill.style.width = pct + '%';
+    }
+}
+
+// Animate table rows on load
+const tableRows = document.querySelectorAll('.table-row');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+}, { threshold: 0.05 });
+tableRows.forEach(row => observer.observe(row));
+</script>
+
+</body>
+</html>
