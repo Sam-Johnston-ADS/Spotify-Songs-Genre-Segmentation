@@ -99,15 +99,15 @@ Open browser:
 http://127.0.0.1:5000/
 ```
 ### 🎯 Machine Learning Models Used
-####🔹 Random Forest Classifier
+#### 🔹 Random Forest Classifier
 Used for predicting playlist genre
 Evaluation:
 Accuracy
 Classification Report
 Confusion Matrix
-####🔹 K-Means Clustering
+#### 🔹 K-Means Clustering
 Used for segmenting songs into clusters
-####🔹 KNN Recommendation System
+#### 🔹 KNN Recommendation System
 Used for finding similar songs based on audio features
 ### 📈 Visualizations Included
 
@@ -127,7 +127,7 @@ Browse songs from dataset
 -Predict genre using ML
 -Recommend similar songs
 
-### 🛠 Tech Stack
+###  🛠 Tech Stack
 -Python
 -Pandas / NumPy
 -Matplotlib / Seaborn
